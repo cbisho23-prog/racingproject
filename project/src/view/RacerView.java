@@ -1,6 +1,6 @@
-package model.view;
+package view;
 
-import model.model.Racer;
+import model.Racer;
 import model.composite.Race;
 import java.util.List;
 

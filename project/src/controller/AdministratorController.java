@@ -1,10 +1,9 @@
-package model.pattern;
+package controller;
 
-import model.model.License;
+import model.License;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-
 /**
  * Singleton Pattern — only one AdministratorController can exist.
  */

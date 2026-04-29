@@ -1,9 +1,9 @@
 package model.composite;
 
-import model.model.Racer;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import model.Racer;
 
 /**
  * Composite in the Composite Pattern.

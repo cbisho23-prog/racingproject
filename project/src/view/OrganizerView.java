@@ -1,8 +1,8 @@
-package model.view;
+package view;
 
-import model.model.Organizer;
+import model.Organizer;
 import model.composite.Race;
-import model.model.Racer;
+import model.Racer;
 import java.util.List;
 
 public class OrganizerView {

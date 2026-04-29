@@ -1,20 +1,21 @@
-package model;
+package main;
 
 import model.composite.Race;
 import model.composite.Stage;
-import model.controller.OrganizerController;
-import model.controller.RaceController;
-import model.controller.RacerController;
-import model.model.Administrator;
-import model.model.Organizer;
-import model.model.Racer;
-import model.pattern.AdministratorController;
-import model.view.RacerView;
-import model.view.OrganizerView;
-import model.view.RaceView;
-import model.view.AdministratorView;
+import controller.OrganizerController;
+import controller.RaceController;
+import controller.RacerController;
+import model.Administrator;
+import model.Organizer;
+import model.Racer;
+import controller.AdministratorController;
+import view.RacerView;
+import view.OrganizerView;
+import view.RaceView;
+import view.AdministratorView;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
@@ -23,7 +24,7 @@ public class Main {
 
     static Scanner scanner = new Scanner(System.in);
 
-    // Shared state (in a real app this would come from a database)
+    // Shared state
     static OrganizerController orgCtrl   = new OrganizerController();
     static RaceController      raceCtrl  = new RaceController();
     static RacerController     racerCtrl = new RacerController();
@@ -33,11 +34,22 @@ public class Main {
     static OrganizerView   orgView   = new OrganizerView();
     static AdministratorView adminView = new AdministratorView();
 
+    // Registered racers list
+    static ArrayList<Racer> registeredRacers = new ArrayList<>();
+    
     // Demo users
-    static Racer racer1 = new Racer("Alice",   "R001", 1);
-    static Racer         racer2 = new Racer("Bob",     "R002", 1);
-    static Organizer org    = new Organizer("Carol", "O001");
-    static Administrator admin  = new Administrator("Dave",  "A001");
+    static Racer racer1 = new Racer("Alice", "R001", 1);
+    static Racer racer2 = new Racer("Bob", "R002", 1);
+    static Organizer org = new Organizer("Carol", "O001");
+    static Administrator admin = new Administrator("Dave", "A001");
+    
+    // Logged in racer
+    static Racer loggedInRacer = null;
+
+    static {
+        registeredRacers.add(racer1);
+        registeredRacers.add(racer2);
+    }
 
     public static void main(String[] args) {
         System.out.println("╔══════════════════════════════╗");
@@ -49,27 +61,122 @@ public class Main {
             printMainMenu();
             String choice = scanner.nextLine().trim();
             switch (choice) {
-                case "1" -> organizerMenu();
-                case "2" -> racerMenu();
-                case "3" -> adminMenu();
-                case "4" -> demoAll();
+                case "1" -> loginFlow();
+                case "2" -> registerFlow();
+                case "3" -> organizerMenu();
+                case "4" -> adminMenu();
+                case "5" -> demoAll();
                 case "0" -> { System.out.println("Goodbye!"); running = false; }
                 default  -> System.out.println("Invalid option.");
             }
         }
     }
 
-    // ── Menus ─────────────────────────────────────────────────────────────
+    // ── Main Menu ─────────────────────────────────────────────────────────
 
     static void printMainMenu() {
         System.out.println("\n--- Main Menu ---");
-        System.out.println("1. Organizer actions");
-        System.out.println("2. Racer actions");
-        System.out.println("3. Admin actions");
-        System.out.println("4. Run full demo");
+        System.out.println("1. Login");
+        System.out.println("2. Register");
+        System.out.println("3. Organizer actions");
+        System.out.println("4. Admin actions");
+        System.out.println("5. Run full demo");
         System.out.println("0. Exit");
         System.out.print("Choice: ");
     }
+
+    // ── Registration ───────────────────────────────────────────────────────
+
+    static void registerFlow() {
+        System.out.println("\n--- Register New Racer ---");
+        System.out.print("Enter name: ");
+        String name = scanner.nextLine().trim();
+        System.out.print("Enter category (1-5, 1 is best): ");
+        int cat = Integer.parseInt(scanner.nextLine().trim());
+        
+        String racerId = "R" + (registeredRacers.size() + 100);
+        Racer newRacer = new Racer(name, racerId, cat);
+        registeredRacers.add(newRacer);
+        
+        System.out.println("\n✅ Account created successfully!");
+        System.out.println("Your Racer ID is: " + racerId);
+        System.out.println("Please login using your ID.\n");
+    }
+
+    // ── Login ──────────────────────────────────────────────────────────────
+
+    static void loginFlow() {
+        System.out.println("\n--- Login ---");
+        System.out.print("Enter your Racer ID: ");
+        String id = scanner.nextLine().trim();
+        
+        for (Racer r : registeredRacers) {
+            if (r.getID().equals(id)) {
+                loggedInRacer = r;
+                System.out.println("✅ Login successful! Welcome " + r.getName());
+                racerMenuLoggedIn();
+                return;
+            }
+        }
+        System.out.println("❌ Racer ID not found. Please register first.\n");
+    }
+
+    // ── Racer Menu (Logged In) ─────────────────────────────────────────────
+
+    static void racerMenuLoggedIn() {
+        boolean inMenu = true;
+        while (inMenu) {
+            System.out.println("\n--- Racer Menu ---");
+            System.out.println("Welcome " + loggedInRacer.getName() + " (Category: " + loggedInRacer.getCategory() + ")");
+            System.out.println("1. View my profile");
+            System.out.println("2. Purchase a license");
+            System.out.println("3. Sign up for a race");
+            System.out.println("4. View available races");
+            System.out.println("5. View my race results");
+            System.out.println("0. Logout");
+            System.out.print("Choice: ");
+            String c = scanner.nextLine().trim();
+            switch (c) {
+                case "1" -> racerView.displayProfile(loggedInRacer);
+                case "2" -> purchaseLicenseForLoggedInRacer();
+                case "3" -> signUpForRaceLoggedIn();
+                case "4" -> racerView.showRaces(orgCtrl.getRaces());
+                case "5" -> racerView.showResults(loggedInRacer, orgCtrl.getRaces());
+                case "0" -> { 
+                    System.out.println("Logged out.\n");
+                    loggedInRacer = null;
+                    inMenu = false;
+                }
+                default -> System.out.println("Invalid option.");
+            }
+        }
+    }
+
+    static void purchaseLicenseForLoggedInRacer() {
+        System.out.print("Enter license category (1-5): ");
+        int cat = Integer.parseInt(scanner.nextLine().trim());
+        racerCtrl.purchaseLicense(loggedInRacer, cat);
+    }
+
+    static void signUpForRaceLoggedIn() {
+        List<Race> races = orgCtrl.getRaces();
+        if (races.isEmpty()) { 
+            System.out.println("No races available."); 
+            return; 
+        }
+        System.out.println("Select race:");
+        for (int i = 0; i < races.size(); i++)
+            System.out.println("  " + (i + 1) + ". " + races.get(i).getName());
+        System.out.print("Choice: ");
+        int idx = Integer.parseInt(scanner.nextLine().trim()) - 1;
+        if (idx < 0 || idx >= races.size()) { 
+            System.out.println("Invalid."); 
+            return; 
+        }
+        racerCtrl.signUp(loggedInRacer, races.get(idx));
+    }
+
+    // ── Organizer Menu ─────────────────────────────────────────────────────
 
     static void organizerMenu() {
         System.out.println("\n--- Organizer Menu ---");
@@ -92,26 +199,7 @@ public class Main {
         }
     }
 
-    static void racerMenu() {
-        System.out.println("\n--- Racer Menu ---");
-        System.out.println("1. View racer profile (Alice)");
-        System.out.println("2. View racer profile (Bob)");
-        System.out.println("3. Sign up for a race");
-        System.out.println("4. Purchase a license");
-        System.out.println("5. View available races");
-        System.out.println("0. Back");
-        System.out.print("Choice: ");
-        String c = scanner.nextLine().trim();
-        switch (c) {
-            case "1" -> racerView.displayProfile(racer1);
-            case "2" -> racerView.displayProfile(racer2);
-            case "3" -> signUpFlow();
-            case "4" -> purchaseLicenseFlow();
-            case "5" -> racerView.showRaces(orgCtrl.getRaces());
-            case "0" -> {}
-            default  -> System.out.println("Invalid.");
-        }
-    }
+    // ── Admin Menu ─────────────────────────────────────────────────────────
 
     static void adminMenu() {
         System.out.println("\n--- Admin Menu ---");
@@ -130,7 +218,7 @@ public class Main {
                 AdministratorController.getInstance().createLicense(cat, LocalDate.now().plusYears(1));
             }
             case "3" -> adminView.showLicenses();
-            case "4" -> adminView.showResults(Arrays.asList(racer1, racer2));
+            case "4" -> adminView.showResults(registeredRacers);
             case "0" -> {}
             default  -> System.out.println("Invalid.");
         }
@@ -192,76 +280,41 @@ public class Main {
         raceView.showPodium(race);
     }
 
-    static void signUpFlow() {
-        List<Race> races = orgCtrl.getRaces();
-        if (races.isEmpty()) { System.out.println("No races available."); return; }
-        System.out.println("Select racer: 1. Alice  2. Bob");
-        System.out.print("Choice: ");
-        Racer racer = scanner.nextLine().trim().equals("1") ? racer1 : racer2;
-        System.out.println("Select race:");
-        for (int i = 0; i < races.size(); i++)
-            System.out.println("  " + (i + 1) + ". " + races.get(i).getName());
-        System.out.print("Choice: ");
-        int idx = Integer.parseInt(scanner.nextLine().trim()) - 1;
-        if (idx < 0 || idx >= races.size()) { System.out.println("Invalid."); return; }
-        racerCtrl.signUp(racer, races.get(idx));
-    }
-
-    static void purchaseLicenseFlow() {
-        System.out.println("Select racer: 1. Alice  2. Bob");
-        System.out.print("Choice: ");
-        Racer racer = scanner.nextLine().trim().equals("1") ? racer1 : racer2;
-        System.out.print("License category: ");
-        int cat = Integer.parseInt(scanner.nextLine().trim());
-        racerCtrl.purchaseLicense(racer, cat);
-    }
-
     // ── Full demo ─────────────────────────────────────────────────────────
 
     static void demoAll() {
         System.out.println("\n====== FULL DEMO ======");
 
-        // 1. Organizer creates a race
         Race race = orgCtrl.createRace("Tour de Code", LocalDate.of(2026, 8, 1),
                 3, 1, LocalDate.of(2026, 7, 1), true, "road");
 
-        // 2. Add stages (Composite Pattern in action)
-        raceCtrl.addStage(race, new Stage(1, 50,  "City Centre Loop"));
-        raceCtrl.addStage(race, new Stage(2, 80,  "Mountain Pass"));
-        raceCtrl.addStage(race, new Stage(3, 60,  "Coastal Sprint"));
+        raceCtrl.addStage(race, new Stage(1, 50, "City Centre Loop"));
+        raceCtrl.addStage(race, new Stage(2, 80, "Mountain Pass"));
+        raceCtrl.addStage(race, new Stage(3, 60, "Coastal Sprint"));
 
-        // 3. Racer purchases license
         racerCtrl.purchaseLicense(racer1, 1);
         racerCtrl.purchaseLicense(racer2, 1);
 
-        // 4. Racers sign up
         racerCtrl.signUp(racer1, race);
         racerCtrl.signUp(racer2, race);
 
-        // 5. View full race details (recursive composite traversal)
         System.out.println("\n-- Race details via RaceComponent.getDetails() --");
         raceCtrl.getDetails(race);
 
-        // 6. Race status
         raceView.showStatus(race);
 
-        // 7. Set podiums
         raceCtrl.setPodiums(race, Arrays.asList(racer1, racer2));
 
-        // 8. Show podium
         raceView.showPodium(race);
 
-        // 9. Racer results
         racerView.showResults(racer1, orgCtrl.getRaces());
 
-        // 10. Admin — Singleton demo
         System.out.println("\n-- Singleton AdministratorController --");
         AdministratorController a1 = AdministratorController.getInstance();
         AdministratorController a2 = AdministratorController.getInstance();
         System.out.println("Same instance? " + (a1 == a2));
         adminView.showLicenses();
 
-        // 11. Organizer notification
         racerCtrl.updateCategory(racer1, 2);
         orgView.notifiedRacerUpgrade(racer1);
 

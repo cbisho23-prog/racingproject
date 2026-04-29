@@ -1,9 +1,9 @@
-package model.controller;
+package controller;
 
 import model.composite.Race;
 import model.composite.RaceComponent;
 import model.composite.Stage;
-import model.model.Racer;
+import model.Racer;
 import java.util.List;
 
 public class RaceController {

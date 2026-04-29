@@ -1,9 +1,9 @@
-package model.controller;
+package controller;
 
 import model.composite.Race;
-import model.model.License;
-import model.model.Racer;
-import model.pattern.AdministratorController;
+import model.License;
+import model.Racer;
+import controller.AdministratorController;
 import java.time.LocalDate;
 
 public class RacerController {
