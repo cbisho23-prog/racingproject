@@ -9,6 +9,18 @@ import java.time.LocalDate;
 public class RacerController {
 
     public void signUp(Racer racer, Race race) {
+        // Check if racer has a valid license
+        if (racer.getLicensesPurchased().isEmpty()) {
+            System.out.println("Error: You need a valid license to register for a race.");
+            return;
+        }
+        
+        // Check if race is full
+        if (race.isFull()) {
+            System.out.println("Error: Race is at maximum capacity.");
+            return;
+        }
+        
         if (race.signUp(racer)) {
             System.out.println(racer.getName() + " successfully signed up for " + race.getName());
         }

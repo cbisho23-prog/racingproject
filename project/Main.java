@@ -99,6 +99,7 @@ public class Main {
         System.out.println("3. Sign up for a race");
         System.out.println("4. Purchase a license");
         System.out.println("5. View available races");
+        System.out.println("6. View my race results");
         System.out.println("0. Back");
         System.out.print("Choice: ");
         String c = scanner.nextLine().trim();
@@ -214,6 +215,13 @@ public class Main {
         System.out.print("License category: ");
         int cat = Integer.parseInt(scanner.nextLine().trim());
         racerCtrl.purchaseLicense(racer, cat);
+    }
+
+    static void viewRaceResultsFlow() {
+        System.out.println("Select racer: 1. Alice  2. Bob");
+        System.out.print("Choice: ");
+        Racer racer = scanner.nextLine().trim().equals("1") ? racer1 : racer2;
+        racerView.showResults(racer, orgCtrl.getRaces());
     }
 
     // ── Full demo ─────────────────────────────────────────────────────────
