@@ -1,4 +1,4 @@
-package model.controller;
+package controller;
 
 import model.composite.Race;
 import model.composite.Stage;

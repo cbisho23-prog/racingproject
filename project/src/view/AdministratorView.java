@@ -1,8 +1,8 @@
-package model.view;
+package view;
 
-import model.model.Administrator;
-import model.model.Racer;
-import model.pattern.AdministratorController;
+import model.Administrator;
+import model.Racer;
+import controller.AdministratorController;
 import java.util.List;
 
 public class AdministratorView {
